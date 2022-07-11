@@ -1,38 +1,8 @@
 import json
 import jsonpatch
-import pymysql
-import mysql.connector
+import os
 from mysql.connector import Error
 from connect import connection
-
-'''n_data = {
-    "users": [{
-        "id": users[0][0],
-        "name": users[0][1],
-        "age": users[0][2]
-    },
-        {
-            "id": users[1][0],
-            "name": users[1][1],
-            "age": users[1][2]
-        }
-    ]
-}'''
-
-
-"""def write(filename):
-    with open(filename, 'w', encoding='utf-8') as file:
-        tests = json.load(file, indent=4)
-        for test in tests:
-            try:
-                if 'expected' is not test:
-                    continue
-            except Exception:
-                if test.get('error'):
-                    continue
-                else:
-                    raise
-"""
 
 
 def first_status(connection, query):
@@ -50,20 +20,10 @@ def first_status(connection, query):
 
 
 def write_to_json(filename, data):
-    # data = json.dumps(data)
-    # data = json.loads(str(data))
     with open(filename, 'w', encoding='utf-8') as file:
-        json.dump(data, file)
-
-
-
-# for user in users:
-#    print(users)
-
-
-# print(len(users))
-
-# print(users)
+        bool_json = os.stat('data.json').st_size == 0
+        if bool_json == True:
+            file.write(data)
 
 
 def json_patch_write(query, connection):
@@ -75,18 +35,36 @@ def json_patch_write(query, connection):
         print(f"The error '{er}' occurred")
 
 
-def json_patch_read(filename):
+def json_read(filename):
     with open(filename, 'r', encoding='utf-8') as file:
         return json.load(file)
 
 
-'''def json_patch():
-    second_data = json_patch_read('data.json')
-    first_data = first_status(connection, select_users)'''
+# def list_to_json():
+#     alist = json_read('data.json')
+#     jsonStr = json.dumps(alist, indent=4)
+#     return jsonStr
 
 
-# n_data = read_json("data.json")
+def write_json_patch(filename, data):
+    with open(filename, 'w', encoding='utf-8') as file:
+        jsonpatch.JsonPatch.to_string(data)
+        file.write(str(data))
 
-select_users = "SELECT * FROM users"
-users = first_status(connection, select_users)
-write_to_json('data.json', users)
+
+def json_patch():
+    scr = json_read('data.json')
+    dst = json.loads(first_status(connection, select_users))
+    # dst = json.loads(users)
+    patch = jsonpatch.make_patch(scr, dst)
+    # print("scr", type(scr))
+    # print("dst", type(dst))
+    return patch
+
+
+if __name__ == '__main__':
+    select_users = "SELECT * FROM users"
+    users = first_status(connection, select_users)
+    # print(json_patch())
+    write_json_patch('json_patch.json', json_patch())
+    write_to_json('data.json', users)
