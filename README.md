@@ -1,1 +1,1 @@
-# python_json_patch
+# Python API для стриминга изменений объектов из базы данных в виде JSON PATCH
